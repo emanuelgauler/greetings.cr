@@ -1,0 +1,13 @@
+name: greetings
+version: 0.1.0
+
+authors:
+  - emanuelgauler <emanuelgauler@gmail.com>
+
+targets:
+  greetings:
+    main: src/greetings.cr
+
+crystal: '>= 1.19.1'
+
+license: MIT
