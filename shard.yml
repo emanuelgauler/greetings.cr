@@ -11,3 +11,7 @@ targets:
 crystal: '>= 1.19.1'
 
 license: MIT
+
+dependencies:
+  uing:
+    github: kojix2/uing
