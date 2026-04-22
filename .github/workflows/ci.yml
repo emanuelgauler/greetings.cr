@@ -24,3 +24,6 @@ jobs:
       - name: Build App
         run: |
           shards build --release --no-debug
+
+      - name: Testing App
+        run: bin/greetings version

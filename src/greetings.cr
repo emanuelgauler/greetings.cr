@@ -1,3 +1,15 @@
+require "./greetings/version"
+require "option_parser"
+parser = OptionParser.new do |p|
+	 p.banner = "greetings [options]"
+
+	 p.on("version", "Muestra la versión de la app") do
+			puts VERSION; exit
+	 end
+	 
+end
+parser.parse
+
 # guardar como app.cr
 require "uing"
 
