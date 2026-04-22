@@ -1,0 +1,247 @@
+# DeepWiki Q&A with Code Context for Repository: kojix2/uing
+## Q1
+¿Qué necesito instalar para usar UIng en Windows 10?
+### Answer
+El usuario pregunta sobre qué necesitar instalar para usar UIng en Windows 10. Voy a buscar información sobre instalación en Windows en el repositorio kojix2/uing.
+
+El usuario pregunta qué necesita instalar para usar UIng en Windows 10. Ya tengo bastante información del README. Déjame leer la sección de instalación de Windows más detalladamente y también buscar la wiki de "Getting Started".
+
+Tengo suficiente información para responder la pregunta del usuario sobre qué necesita instalar para usar UIng en Windows 10.
+
+Hay tres toolchains soportados en Windows:
+1. MSVC (Microsoft Visual C++)
+2. MinGW64
+3. UCRT64
+
+Para cada uno, los requisitos son diferentes. Déjame resumir lo que encontré.
+
+
+Para usar UIng en Windows 10 hay tres toolchains soportados. Elige uno:
+
+---
+
+## Opción 1: MSVC (recomendado para Windows nativo)
+
+Necesitas instalar:
+
+1. **Crystal** — desde [crystal-lang.org](https://crystal-lang.org/install/)
+2. **Visual Studio** (o Build Tools for Visual Studio) con el componente "Desktop development with C++"
+3. **Windows Kits 10** (incluido con Visual Studio)
+
+Luego, usa el **Developer Command Prompt** de Visual Studio, o agrega manualmente la ruta al PATH:
+
+```powershell
+$env:Path += ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
+``` uing:79-85 
+
+El workflow de CI para MSVC instala Crystal y configura el entorno MSVC con `ilammy/msvc-dev-cmd`: uing:16-23 
+
+---
+
+## Opción 2: MinGW64 (vía MSYS2)
+
+Necesitas instalar:
+
+1. **MSYS2** — desde [msys2.org](https://www.msys2.org/)
+2. Dentro de MSYS2 (entorno `MINGW64`), instalar:
+   ```sh
+   pacman -S mingw-w64-x86_64-crystal mingw-w64-x86_64-shards git
+   ``` uing:16-23 
+
+---
+
+## Opción 3: UCRT64 (vía MSYS2)
+
+Igual que MinGW64 pero usando el entorno `UCRT64`:
+
+```sh
+pacman -S mingw-w64-ucrt-x86_64-crystal mingw-w64-ucrt-x86_64-shards git
+``` uing:16-23 
+
+---
+
+## Pasos comunes (después de elegir toolchain)
+
+Una vez instalado el toolchain, los pasos son los mismos para las tres opciones:
+
+```sh
+# 1. Agregar UIng a tu shard.yml y ejecutar:
+shards install
+# (esto descarga automáticamente la librería libui-ng via postinstall)
+
+# O si clonas el repo directamente:
+git clone https://github.com/kojix2/uing
+cd uing
+crystal run download.cr   # descarga libui.a / ui.lib
+crystal run examples/control_gallery.cr
+``` uing:45-71 
+
+La librería nativa (`ui.lib` para MSVC, `libui.a` para MinGW/UCRT) se descarga automáticamente desde [kojix2/libui-ng releases](https://github.com/kojix2/libui-ng/releases) — no necesitas compilarla tú mismo. uing:55-56
+### Citations
+**File:** README.md (L45-71)
+```markdown
+## Installation
+
+Add the dependency to your `shard.yml`:
+
+```yaml
+dependencies:
+  uing:
+    github: kojix2/uing
+```
+
+- The required libui-ng binary is automatically downloaded from [kojix2/libui-ng GitHub Releases](https://github.com/kojix2/libui-ng/releases) via [postinstall](https://github.com/kojix2/uing/blob/main/shard.yml).
+- The UIng project is not just a binding; it provides unofficial patched builds of libui-ng for platforms. For more details, see the [README.md](https://github.com/kojix2/libui-ng/blob/main/README.md) and commits on the [`dev` branch](https://github.com/kojix2/libui-ng/commits/dev).
+
+## Quick Start
+
+Clone the repository:
+
+```sh
+git clone https://github.com/kojix2/uing
+cd uing
+```
+
+Create the `libui` directory and download the static library for your platform:
+
+```sh
+crystal run download.cr
+```
+```
+**File:** README.md (L79-85)
+```markdown
+### Windows MSVC Setup
+
+For Windows users using MSVC, use Developer Command Prompt or add Windows Kits path:
+
+```powershell
+$env:Path += ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64"
+```
+```
+**File:** .github/workflows/ci-windows-msvc.yml (L16-23)
+```yaml
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+```
+**File:** .github/workflows/ci-windows-mingw64.yml (L16-23)
+```yaml
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-crystal
+            mingw-w64-x86_64-shards
+            git
+```
+**File:** .github/workflows/ci-windows-ucrt64.yml (L16-23)
+```yaml
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-crystal
+            mingw-w64-ucrt-x86_64-shards
+            git
+```
+## Q2
+¿Sábes si la action de ilammy/msvc-dev-cmd@v1 ya instala las dependencias para libui en windows?
+### Answer
+El usuario pregunta si la action `ilammy/msvc-dev-cmd@v1` ya instala las dependencias necesarias para libui en Windows. Necesito investigar qué hace exactamente esa action y qué dependencias necesita libui-ng en Windows. Voy a buscar en el repositorio para entender mejor el proceso de build en Windows.
+
+El usuario pregunta si la action `ilammy/msvc-dev-cmd@v1` ya instala las dependencias para libui en Windows. 
+
+Mirando el workflow de CI para MSVC, veo que:
+1. `ilammy/msvc-dev-cmd@v1` solo configura el entorno del Developer Command Prompt de MSVC (variables de entorno, PATH, etc.)
+2. Las dependencias de libui en Windows MSVC son: User32, Gdi32, Comctl32, UxTheme, Dwrite, D2d1, Windowscodecs, Uuid, Winmm - todas son APIs nativas de Windows que ya vienen con el SDK de Windows (Windows Kits)
+3. La librería `ui.lib` se descarga por separado con `crystal run download.cr`
+
+Entonces `ilammy/msvc-dev-cmd@v1` NO instala libui - solo configura el entorno MSVC. La librería libui se descarga con `download.cr`. Las dependencias del sistema (User32, Gdi32, etc.) ya vienen con Windows SDK que se instala con Visual Studio.
+
+El runner `windows-2025` de GitHub Actions ya tiene Visual Studio preinstalado con el Windows SDK, por eso no hay un paso explícito de instalación de esas dependencias.
+
+
+No. `ilammy/msvc-dev-cmd@v1` **solo configura las variables de entorno** del Developer Command Prompt (PATH, INCLUDE, LIB, etc.) — no instala ninguna dependencia adicional.
+
+Las dependencias que libui-ng necesita en MSVC son todas **APIs nativas de Windows** que ya vienen incluidas con el Windows SDK: uing:4-15 
+
+`User32`, `Gdi32`, `Comctl32`, `UxTheme`, `Dwrite`, `D2d1`, `Windowscodecs`, `Uuid`, `Winmm` — todas son parte del Windows SDK, que se instala junto con Visual Studio.
+
+El workflow de CI funciona porque el runner `windows-2025` de GitHub Actions ya tiene Visual Studio (con el Windows SDK) preinstalado. `ilammy/msvc-dev-cmd@v1` simplemente activa ese entorno para que el compilador y el linker puedan encontrar esas librerías. uing:10-23 
+
+La única dependencia que **sí se descarga explícitamente** es `ui.lib` (la librería estática de libui-ng), que se obtiene con `crystal run download.cr` desde los releases de `kojix2/libui-ng`. uing:28-31
+### Citations
+**File:** src/uing/lib_ui/lib_ui.cr (L4-15)
+```text
+  {% if flag?(:msvc) %}
+    @[Link("User32")]
+    @[Link("Gdi32")]
+    @[Link("Comctl32")]
+    @[Link("UxTheme")]
+    @[Link("Dwrite")]
+    @[Link("D2d1")]
+    @[Link("Windowscodecs")]
+    @[Link("Uuid")]
+    @[Link("Winmm")]
+    # Exclude LIBCMT to avoid conflicts with Crystal's MSVC runtime (/MD).
+    @[Link(ldflags: "/NODEFAULTLIB:LIBCMT")]
+```
+**File:** .github/workflows/ci-windows-msvc.yml (L10-23)
+```yaml
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+```
+**File:** .github/workflows/ci-windows-msvc.yml (L28-31)
+```yaml
+      - name: Download libui library
+        run: |
+          crystal run download.cr
+          ls libui
+```
+## Q3
+Entonces, con GitHub Actions, no es necesario instalar dependencias
+### Answer
+El usuario está haciendo una afirmación/pregunta sobre si con GitHub Actions no es necesario instalar dependencias. Basándome en la conversación anterior, ya tengo suficiente contexto para responder esto sin necesidad de buscar más información.
+
+El punto es que en GitHub Actions con el runner `windows-2025`, Visual Studio y el Windows SDK ya están preinstalados, por lo que las dependencias del sistema (User32, Gdi32, etc.) ya están disponibles. La única cosa que se descarga explícitamente es `ui.lib` con `crystal run download.cr`.
+
+Entonces la respuesta es: correcto, en GitHub Actions no es necesario instalar las dependencias del sistema manualmente porque el runner ya las tiene. Pero sí se necesita descargar `ui.lib` con `download.cr`.
+
+
+Correcto, pero con un matiz importante: las dependencias del **sistema** (Windows SDK con User32, Gdi32, etc.) no necesitan instalarse porque el runner `windows-2025` ya las tiene preinstaladas con Visual Studio.
+
+Sin embargo, la librería `ui.lib` de libui-ng **sí se descarga explícitamente** en cada ejecución del workflow: uing:28-31 
+
+Así que en GitHub Actions el flujo es:
+1. `crystal-lang/install-crystal@v1` — instala Crystal
+2. `ilammy/msvc-dev-cmd@v1` — activa el entorno MSVC (ya preinstalado en el runner)
+3. `crystal run download.cr` — descarga `ui.lib` desde los releases de `kojix2/libui-ng`
+
+En una máquina local con Windows 10, en cambio, sí tendrías que instalar Visual Studio (con el Windows SDK) manualmente, ya que no viene preinstalado.
+### Citations
+**File:** .github/workflows/ci-windows-msvc.yml (L28-31)
+```yaml
+      - name: Download libui library
+        run: |
+          crystal run download.cr
+          ls libui
+```
