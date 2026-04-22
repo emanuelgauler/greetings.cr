@@ -5,6 +5,8 @@ authors:
   - emanuelgauler <emanuelgauler@gmail.com>
 
 targets:
+  tablenced:
+    main: src/advanced_table.cr
   greetings:
     main: src/greetings.cr
 
