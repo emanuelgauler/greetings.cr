@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with: 
           name: greetings-windows-x64
-          path: bin/greetings
+          path: ./bin/greetings
           retention-days: 2
 
 
