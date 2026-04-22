@@ -23,16 +23,10 @@ jobs:
 
       - name: Build App
         run: |
-          shards build --release --no-debug
+          shards build --release --no-debug --static
 
-      - name: Testing App
-        run: bin/greetings version
+      - name: Listando dependencias dinámicas
+        run: dumpbin /dependencies bin\greetings.exe
 
-      - name: Crear el artifact
-        uses: actions/upload-artifact@v7
-        with: 
-          name: greetings-windows-x64
-          path: bin/greetings.exe
-          retention-days: 2
 
 
