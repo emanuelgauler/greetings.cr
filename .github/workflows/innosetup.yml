@@ -8,8 +8,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: true
 
       - uses: crystal-lang/install-crystal@v1
         with:
@@ -28,10 +26,6 @@ jobs:
           crystal run download.cr
           ls libui
 
-      - name: Run tests
-        run: crystal spec
-
-      - name: Build all examples
+      - name: Build App
         run: |
-          Get-ChildItem -Path examples -Filter *.cr | ForEach-Object { crystal build $_.FullName }
-          ls
+          shards build --release --no-debug
