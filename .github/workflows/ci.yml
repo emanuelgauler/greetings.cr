@@ -23,7 +23,7 @@ jobs:
 
       - name: Build App
         run: |
-          shards build --release --no-debug --static tablenced
+          shards build --release --no-debug --static --link-flags=/SUBSYSTEM:WINDOWS tablenced
 
       - name: Crear el artifact
         uses: actions/upload-artifact@v7
